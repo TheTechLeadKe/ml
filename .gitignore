@@ -1,0 +1,7 @@
+CFiles
+main
+.*swp
+.*swo
+*.c
+*.cpp
+

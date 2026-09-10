@@ -1,0 +1,86 @@
+
+foreign "C"{
+    fn malloc(u64 size)->void *
+}
+
+struct Matrix{
+    i32 rows
+    i32 cols
+    f64 *data
+}
+
+impl Matrix{
+    fn init(i32 rows,i32 cols,f64 *data){
+        if self->alloc(rows,cols){   
+            self->set_elements(data)
+        }
+    }
+
+    #[static(true)]
+    fn new(i32 rows,i32 cols,f64 *data)->Matrix{
+        Matrix node
+        node.init(rows,cols,data)
+        return node
+    }
+
+    fn alloc(i32 rows,i32 cols)->bool{
+        self->rows = rows
+        self->cols = cols
+        self->data = malloc(sizeof(f64) * self->rows * self->cols)
+
+        if !self->data{
+            self->rows = 0
+            self->cols = 0
+            self->data = null
+        }
+
+        return self->data != null
+    }
+
+    fn is_error()->bool{
+        return !self->rows or !self->cols or !self->data
+    }
+    
+
+    fn set_elements(f64 *data)->bool{
+        if self->is_error() or !data{
+            return false
+        }
+
+        u64 ii = 0
+
+        while ii < (self->rows * self->cols){
+            self->data[ii] = data[ii]
+            ii             += 1
+        }
+
+        return true
+    }
+
+    fn is_same_shape(Matrix *matrix)->bool{
+        if !matrix or matrix->is_error(){
+            return false
+        }
+
+        return (self->rows == matrix->rows) and (self->cols == matrix->cols)
+    }
+
+
+    fn add(Matrix *matrix)->bool{
+        if !self->is_same_shape(matrix){
+            return false
+        }
+
+        u64 ii = 0
+
+        while ii < (self->rows * self->cols){
+            self->data[ii] += matrix->data[ii]
+            ii             += 1
+        }
+
+        return true
+    }
+}
+
+
+
