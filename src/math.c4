@@ -1,0 +1,27 @@
+
+foreign "C"{
+    fn rand()->i32
+    fn srand(u32 seed)
+    fn time(i32 *value)->i32
+}
+
+const i32 RAND_MAX = 0x7FFFFFFF
+
+fn randomize_seed(){
+    srand(time(null))
+}
+
+fn random_f64(f64 low,f64 high)->f64{
+    max_swap(&high,&low)
+    return (((rand() as f64) / (RAND_MAX as f64)) * (high - low)) + low
+}
+
+fn max_swap(f64 *max,f64 *min){
+    f64 tmp = max@read()
+
+    if min@read() > max@read(){
+        max@write(min@read())
+        min@write(tmp)
+    }
+}
+

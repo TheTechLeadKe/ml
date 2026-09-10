@@ -12,9 +12,34 @@ fn main()->i32{
     Matrix a = Matrix::new(2,2,data as f64 *)
     Matrix b = a.add(a)
     Matrix c = Matrix::zeroed(2,2)
+    Matrix d = Matrix::random(6,6,5,10)
 
     a.print()
     b.print()
     c.print()
+    d.print()
+
+    f64 [4]data1
+    data1[0] = 1
+    data1[1] = 2
+    data1[2] = 3
+    data1[3] = 4
+
+
+    f64 [4]data2
+    data2[0] = 5
+    data2[1] = 6
+    data2[2] = 7
+    data2[3] = 8
+
+    Matrix mat1 = Matrix::new(2,2,data1)
+    Matrix mat2 = Matrix::new(2,2,data2)
+
+    Matrix mat3 = mat1.dot(mat2)
+
+    mat1.print()
+    mat2.print()
+    mat3.print()
+
     return 0
 }

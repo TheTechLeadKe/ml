@@ -1,3 +1,6 @@
+use math::random_f64
+use math::randomize_seed
+use math as math
 
 foreign "C"{
     fn malloc(u64 size)->void *
@@ -32,6 +35,27 @@ impl Matrix{
     #[static(true)]
     fn zeroed(i32 rows,i32 cols)->Matrix{
         return Matrix::new(rows,cols,null)
+    }
+
+
+    #[static(true)]
+    fn random(i32 rows,i32 cols,f64 low,f64 high)->Matrix{
+        Matrix matrix = Matrix::new(rows,cols,null)
+
+        if matrix.is_error(){
+            return matrix
+        }
+
+        randomize_seed()
+
+        u64 ii = 0
+
+        while ii < (matrix.get_rows() * matrix.get_columns()){
+            matrix.data[ii] = random_f64(low,high)
+            ii              += 1
+        }
+
+        return matrix
     }
 
     fn alloc(i32 rows,i32 columns)->bool{
@@ -89,23 +113,13 @@ impl Matrix{
     }
 
 
-    fn is_same_shape_rows(Matrix matrix)->bool{
+    fn is_dot_compatible(Matrix matrix)->bool{
         if matrix.is_error(){
             return false
         }
 
-        return self->get_rows() == matrix.get_rows()
+        return self->get_columns() == matrix.get_rows()
     }
-
-
-    fn is_same_shape_columns(Matrix matrix)->bool{
-        if matrix.is_error(){
-            return false
-        }
-
-        return self->get_columns() == matrix.get_columns()
-    }
-
 
 
     fn add(Matrix matrix)->Matrix{
@@ -125,9 +139,55 @@ impl Matrix{
         return result
     }
 
+    fn dot(Matrix matrix)->Matrix{
+        if !self->is_dot_compatible(matrix){
+            return Matrix::zero()
+        }
+
+        i32 inner     = self->get_columns()
+        Matrix result = Matrix::zeroed(self->get_rows(),matrix.get_columns())
+
+        if result.is_error(){
+            return result
+        }
+
+        u64 ii = 0
+
+        while ii < result.get_rows(){
+            u64 jj = 0
+
+            while jj < result.get_columns(){
+                result.set_data_at(ii,jj,0)
+
+                u64 kk = 0
+
+                while kk < inner{
+                    result.add_to_data_at(ii,jj,self->get_data_at(ii,kk) * matrix.get_data_at(kk,jj))
+                    kk += 1
+                }
+
+                jj += 1
+            }
+
+            ii += 1
+        }
+
+        return result
+    }
+
     fn get_data_at(i32 x,i32 y)->f64{
         return self->data[(x * self->get_columns()) + y]
     }
+
+
+    fn set_data_at(i32 x,i32 y,f64 value){
+        self->data[(x * self->get_columns()) + y] = value
+    }
+
+    fn add_to_data_at(i32 x,i32 y,f64 value){
+        self->data[(x * self->get_columns()) + y] += value
+    }
+
 
 
     fn print()->bool{
@@ -137,20 +197,20 @@ impl Matrix{
 
         printf("\n[\n")
 
-        u64 ii = 0
+        u64 x = 0
 
-        while ii < self->get_rows(){
+        while x < self->get_rows(){
             printf("\t")
-            u64 jj = 0
+            u64 y = 0
             
-            while jj < self->get_columns(){
-                printf("%11.6lf ",self->get_data_at(ii,jj))
-                jj += 1
+            while y < self->get_columns(){
+                printf("%11.6lf ",self->get_data_at(x,y))
+                y += 1
             }
 
             printf("\n")
 
-            ii += 1
+            x += 1
         }
 
         printf("]\n")
