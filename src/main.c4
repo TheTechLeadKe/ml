@@ -34,12 +34,13 @@ fn main()->i32{
 
     Matrix mat1 = Matrix::new(2,2,data1)
     Matrix mat2 = Matrix::new(2,2,data2)
-
     Matrix mat3 = mat1.dot(mat2)
+    Matrix mat4 = Matrix::fill(3,3,10)
 
     mat1.print()
     mat2.print()
     mat3.print()
+    mat4.print()
 
     return 0
 }

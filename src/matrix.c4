@@ -8,20 +8,20 @@ foreign "C"{
 }
 
 struct Matrix{
-    i32 rows
-    i32 columns
+    u32 rows
+    u32 columns
     f64 *data
 }
 
 impl Matrix{
-    fn init(i32 rows,i32 columns,f64 *data){
+    fn init(u32 rows,u32 columns,f64 *data){
         if self->alloc(rows,columns) and (data != null){   
             self->set_elements(data)
         }
     }
 
     #[static(true)]
-    fn new(i32 rows,i32 columns,f64 *data)->Matrix{
+    fn new(u32 rows,u32 columns,f64 *data)->Matrix{
         Matrix node
         node.init(rows,columns,data)
         return node
@@ -33,13 +33,31 @@ impl Matrix{
     }
 
     #[static(true)]
-    fn zeroed(i32 rows,i32 cols)->Matrix{
+    fn zeroed(u32 rows,u32 cols)->Matrix{
         return Matrix::new(rows,cols,null)
     }
 
 
     #[static(true)]
-    fn random(i32 rows,i32 cols,f64 low,f64 high)->Matrix{
+    fn fill(u32 rows,u32 cols,f64 value)->Matrix{
+        Matrix matrix = Matrix::new(rows,cols,null)
+
+        if matrix.is_error(){
+            return matrix
+        }
+
+        u64 ii = 0
+
+        while ii < (matrix.get_rows() * matrix.get_columns()){
+            matrix.data[ii] = value
+            ii              += 1
+        }
+
+        return matrix
+    }
+
+    #[static(true)]
+    fn random(u32 rows,u32 cols,f64 low,f64 high)->Matrix{
         Matrix matrix = Matrix::new(rows,cols,null)
 
         if matrix.is_error(){
@@ -58,7 +76,7 @@ impl Matrix{
         return matrix
     }
 
-    fn alloc(i32 rows,i32 columns)->bool{
+    fn alloc(u32 rows,u32 columns)->bool{
         self->rows    = rows
         self->columns = columns
         self->data    = malloc(sizeof(f64) * self->rows * self->columns)
@@ -72,11 +90,11 @@ impl Matrix{
         return self->get_data() != null
     }
 
-    fn get_rows()->i32{
+    fn get_rows()->u32{
         return self->rows
     }
 
-    fn get_columns()->i32{
+    fn get_columns()->u32{
         return self->columns
     }
 
@@ -144,7 +162,7 @@ impl Matrix{
             return Matrix::zero()
         }
 
-        i32 inner     = self->get_columns()
+        u32 inner     = self->get_columns()
         Matrix result = Matrix::zeroed(self->get_rows(),matrix.get_columns())
 
         if result.is_error(){
@@ -175,16 +193,16 @@ impl Matrix{
         return result
     }
 
-    fn get_data_at(i32 x,i32 y)->f64{
+    fn get_data_at(u32 x,u32 y)->f64{
         return self->data[(x * self->get_columns()) + y]
     }
 
 
-    fn set_data_at(i32 x,i32 y,f64 value){
+    fn set_data_at(u32 x,u32 y,f64 value){
         self->data[(x * self->get_columns()) + y] = value
     }
 
-    fn add_to_data_at(i32 x,i32 y,f64 value){
+    fn add_to_data_at(u32 x,u32 y,f64 value){
         self->data[(x * self->get_columns()) + y] += value
     }
 
