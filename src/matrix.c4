@@ -1,44 +1,67 @@
 
 foreign "C"{
     fn malloc(u64 size)->void *
+    fn printf(const char *format,...)->i32
 }
 
 struct Matrix{
     i32 rows
-    i32 cols
+    i32 columns
     f64 *data
 }
 
 impl Matrix{
-    fn init(i32 rows,i32 cols,f64 *data){
-        if self->alloc(rows,cols){   
+    fn init(i32 rows,i32 columns,f64 *data){
+        if self->alloc(rows,columns) and (data != null){   
             self->set_elements(data)
         }
     }
 
     #[static(true)]
-    fn new(i32 rows,i32 cols,f64 *data)->Matrix{
+    fn new(i32 rows,i32 columns,f64 *data)->Matrix{
         Matrix node
-        node.init(rows,cols,data)
+        node.init(rows,columns,data)
         return node
     }
 
-    fn alloc(i32 rows,i32 cols)->bool{
-        self->rows = rows
-        self->cols = cols
-        self->data = malloc(sizeof(f64) * self->rows * self->cols)
+    #[static(true)]
+    fn zero()->Matrix{
+        return Matrix::new(0,0,null)
+    }
+
+    #[static(true)]
+    fn zeroed(i32 rows,i32 cols)->Matrix{
+        return Matrix::new(rows,cols,null)
+    }
+
+    fn alloc(i32 rows,i32 columns)->bool{
+        self->rows    = rows
+        self->columns = columns
+        self->data    = malloc(sizeof(f64) * self->rows * self->columns)
 
         if !self->data{
-            self->rows = 0
-            self->cols = 0
-            self->data = null
+            self->rows    = 0
+            self->columns = 0
+            self->data    = null
         }
 
-        return self->data != null
+        return self->get_data() != null
+    }
+
+    fn get_rows()->i32{
+        return self->rows
+    }
+
+    fn get_columns()->i32{
+        return self->columns
+    }
+
+    fn get_data()->f64 *{
+        return self->data
     }
 
     fn is_error()->bool{
-        return !self->rows or !self->cols or !self->data
+        return !self->get_rows() or !self->get_columns() or !self->get_data()
     }
     
 
@@ -49,7 +72,7 @@ impl Matrix{
 
         u64 ii = 0
 
-        while ii < (self->rows * self->cols){
+        while ii < (self->get_rows() * self->get_columns()){
             self->data[ii] = data[ii]
             ii             += 1
         }
@@ -57,26 +80,80 @@ impl Matrix{
         return true
     }
 
-    fn is_same_shape(Matrix *matrix)->bool{
-        if !matrix or matrix->is_error(){
+    fn is_same_shape(Matrix matrix)->bool{
+        if matrix.is_error(){
             return false
         }
 
-        return (self->rows == matrix->rows) and (self->cols == matrix->cols)
+        return (self->get_rows() == matrix.get_rows()) and (self->get_columns() == matrix.get_columns())
     }
 
 
-    fn add(Matrix *matrix)->bool{
-        if !self->is_same_shape(matrix){
+    fn is_same_shape_rows(Matrix matrix)->bool{
+        if matrix.is_error(){
             return false
         }
 
+        return self->get_rows() == matrix.get_rows()
+    }
+
+
+    fn is_same_shape_columns(Matrix matrix)->bool{
+        if matrix.is_error(){
+            return false
+        }
+
+        return self->get_columns() == matrix.get_columns()
+    }
+
+
+
+    fn add(Matrix matrix)->Matrix{
+        if !self->is_same_shape(matrix){
+            return Matrix::zero()
+        }
+
+        Matrix result = Matrix::new(self->get_rows(),self->get_columns(),null)
+
         u64 ii = 0
 
-        while ii < (self->rows * self->cols){
-            self->data[ii] += matrix->data[ii]
-            ii             += 1
+        while ii < (self->get_rows() * self->get_columns()){
+            result.data[ii] = self->data[ii] + matrix.data[ii]
+            ii              += 1
         }
+
+        return result
+    }
+
+    fn get_data_at(i32 x,i32 y)->f64{
+        return self->data[(x * self->get_columns()) + y]
+    }
+
+
+    fn print()->bool{
+        if self->is_error(){
+            return false
+        }
+
+        printf("\n[\n")
+
+        u64 ii = 0
+
+        while ii < self->get_rows(){
+            printf("\t")
+            u64 jj = 0
+            
+            while jj < self->get_columns(){
+                printf("%11.6lf ",self->get_data_at(ii,jj))
+                jj += 1
+            }
+
+            printf("\n")
+
+            ii += 1
+        }
+
+        printf("]\n")
 
         return true
     }
