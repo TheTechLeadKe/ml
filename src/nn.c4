@@ -1,0 +1,121 @@
+use matrix::Matrix
+
+
+foreign "C"{
+    fn malloc(u64 size)->void *
+    fn printf(const char *format,...)->i32
+}
+
+struct NN{
+    u64 count
+    Matrix *weights
+    Matrix *biases
+    Matrix *outputs
+}
+
+impl NN{
+    fn init(u64 *architecture,u64 architectureCount,f64 low,f64 high,f64 *inputs){
+        if !self->alloc(architecture,architectureCount,low,high,inputs){
+            self->set_error(true)
+        }
+    }
+
+    #[static(true)]
+    fn new(u64 *architecture,u64 architectureCount,f64 low,f64 high,f64 *inputs)->NN{
+        NN node
+        node.init(architecture,architectureCount,low,high,inputs)
+        return node
+    }
+
+    fn alloc(u64 *architecture,u64 architectureCount,f64 low,f64 high,f64 *inputs)->bool{
+        if !architectureCount{
+            return false
+        }
+
+        self->count   = architectureCount - 1
+        self->weights = malloc(sizeof(Matrix) * self->count)
+
+        if !self->weights{
+            return false
+        }
+
+        self->biases = malloc(sizeof(Matrix) * self->count)
+
+        if !self->biases{
+            return false
+        }
+
+        self->outputs = malloc(sizeof(Matrix) * (self->count + 1))
+
+        if !self->outputs{
+            return false
+        }
+
+        self->outputs[0] = Matrix::new(1,architecture[0],inputs)
+
+        u64 ii = 0
+
+        while ii < self->count{
+            self->weights[ii - 1] = Matrix::random(self->outputs[ii - 1].get_columns(),architecture[ii],low,high)
+            self->biases[ii - 1]  = Matrix::random(1,architecture[ii],low,high)
+
+            if ii != 0{
+                self->outputs[ii] = Matrix::zeroed(1,architecture[ii])
+            }
+
+            ii                    += 1
+        }
+
+        return true
+    }
+
+    fn set_error(bool toggle){
+        if toggle{
+            self->count   = 0
+            self->weights = null
+            self->biases  = null
+            self->outputs = null
+        }
+    }
+
+    fn is_error()->bool{
+        return !self->count or !self->weights or !self->biases or !self->outputs
+    }
+    
+
+    fn forward(){
+        u64 ii = 0
+
+        while ii < self->count - 1{
+            self->outputs[ii + 1].dot_raw(&self->outputs[ii],&self->weights[ii])
+            self->outputs[ii + 1].add_raw(&self->outputs[ii + 1],&self->biases[ii])
+            ii += 1
+        }
+    }
+
+
+    fn print()->bool{
+
+        u64 ii = 0
+
+        while ii < self->count{
+            printf("\n\nLAYER %lu",ii)
+            printf("\n------------------------ A ------------------------------\n")
+            self->outputs[ii].print()
+            printf("-------------------------------------------------------------\n")
+
+            if ii < self->count - 1{
+                printf("\n------------------------ W ------------------------------\n")
+                self->weights[ii].print()
+                printf("-------------------------------------------------------------\n")
+
+                printf("\n------------------------ B ------------------------------\n")
+                self->biases[ii].print()
+            }
+
+            ii += 1
+        }
+    }
+
+}
+

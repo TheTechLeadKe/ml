@@ -1,46 +1,28 @@
-use matrix::Matrix
+use nn::NN
+use math::randomize_seed
+
+foreign "C"{
+    fn printf(const char *format,...)->i32
+}
 
 
 #[no_mangle]
 fn main()->i32{
-    f64 [4]data
-    data[0]  = 90
-    data[1]  = 70 
-    data[2]  = 30 
-    data[3]  = 10 
+    randomize_seed()
+    u64 [3]arch
+    arch[0] = 2
+    arch[1] = 2
+    arch[2] = 1
 
-    Matrix a = Matrix::new(2,2,data as f64 *)
-    Matrix b = a.add(a)
-    Matrix c = Matrix::zeroed(2,2)
-    Matrix d = Matrix::random(6,6,5,10)
+    f64 [2]inputs
+    inputs[0] = 2
+    inputs[1] = 4
 
-    a.print()
-    b.print()
-    c.print()
-    d.print()
-
-    f64 [4]data1
-    data1[0] = 1
-    data1[1] = 2
-    data1[2] = 3
-    data1[3] = 4
-
-
-    f64 [4]data2
-    data2[0] = 5
-    data2[1] = 6
-    data2[2] = 7
-    data2[3] = 8
-
-    Matrix mat1 = Matrix::new(2,2,data1)
-    Matrix mat2 = Matrix::new(2,2,data2)
-    Matrix mat3 = mat1.dot(mat2)
-    Matrix mat4 = Matrix::fill(3,3,10)
-
-    mat1.print()
-    mat2.print()
-    mat3.print()
-    mat4.print()
-
+    NN nn1 = NN::new(arch,3,0,20,inputs)
+    printf("[ Before FEED FORWARD ]\n")
+    nn1.print()
+    nn1.forward()
+    printf("[ After FEED FORWARD ]\n")
+    nn1.print()
     return 0
 }

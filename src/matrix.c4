@@ -64,8 +64,6 @@ impl Matrix{
             return matrix
         }
 
-        randomize_seed()
-
         u64 ii = 0
 
         while ii < (matrix.get_rows() * matrix.get_columns()){
@@ -193,6 +191,53 @@ impl Matrix{
         return result
     }
 
+
+    fn add_raw(Matrix *mat1,Matrix *mat2)->bool{
+        if !mat1 or !mat2 or !self->is_same_shape(mat1@read()) or !self->is_same_shape(mat2@read()){
+            return false
+        }
+
+        u64 ii = 0
+
+        while ii < (self->get_rows() * self->get_columns()){
+            self->data[ii] = mat1->data[ii] + mat2->data[ii]
+            ii               += 1
+        }
+
+        return true
+    }
+
+    fn dot_raw(Matrix *mat1,Matrix *mat2)->bool{
+        if !mat1 or !mat2 or !mat1->is_dot_compatible(mat2@read()) or (self->get_rows() != mat1->get_rows()) or (self->get_columns() != mat2->get_columns()){
+            return false
+        }
+
+        u32 inner = mat1->get_columns()
+        u64 ii    = 0
+
+        while ii < self->get_rows(){
+            u64 jj = 0
+
+            while jj < self->get_columns(){
+                self->set_data_at(ii,jj,0)
+
+                u64 kk = 0
+
+                while kk < inner{
+                    self->add_to_data_at(ii,jj,mat1->get_data_at(ii,kk) * mat2->get_data_at(kk,jj))
+                    kk += 1
+                }
+
+                jj += 1
+            }
+
+            ii += 1
+        }
+
+        return true
+    }
+
+
     fn get_data_at(u32 x,u32 y)->f64{
         return self->data[(x * self->get_columns()) + y]
     }
@@ -213,7 +258,7 @@ impl Matrix{
             return false
         }
 
-        printf("\n[\n")
+        printf("\nshape (rows=%u  columns=%u)\n[\n",self->get_rows(),self->get_columns())
 
         u64 x = 0
 
